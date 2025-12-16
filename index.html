@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Etiquetas - Halexistar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+    :root {
+        --primary-color: #0066cc;
+        --secondary-color: #004999;
+        --accent-color: #00aaff;
+        --text-dark: #333;
+        --bg-light: #f5f5f5;
+        --border-color: #ddd;
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: Arial, sans-serif;
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+    }
+    
+    /* Tela de Login */
+    #loginScreen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    }
+    
+    #loginScreen .logo {
+        width: 250px;
+        margin-bottom: 30px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    
+    #loginScreen .logo img {
+        width: 100%;
+        height: auto;
+    }
+    
+    .login-box {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        width: 350px;
+    }
+    
+    .login-box h2 {
+        color: var(--primary-color);
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--text-dark);
+        font-weight: bold;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid var(--border-color);
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+    
+    .error-message {
+        color: #d32f2f;
+        font-size: 13px;
+        margin-top: 10px;
+        text-align: center;
+        display: none;
+        font-weight: 500;
+    }
+    
+    .error-message.show {
+        display: block;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        padding: 12px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--secondary-color);
+    }
+    
+    /* Sistema Principal */
+    #mainSystem {
+        display: none;
+    }
+    
+    .header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .header .logo-small {
+        height: 40px;
+        background: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+    
+    .header h1 {
+        font-size: 20px;
+    }
+    
+    .user-info {
+        text-align: right;
+    }
+    
+    .user-info span {
+        display: block;
+        font-size: 14px;
+    }
+    
+    .btn-logout {
+        margin-top: 5px;
+        padding: 5px 15px;
+        background-color: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid white;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    
+    .btn-logout:hover {
+        background-color: rgba(255,255,255,0.3);
+    }
+    
+    /* Navegação por Tabs */
+    .tabs {
+        background-color: white;
+        border-bottom: 2px solid var(--border-color);
+        padding: 0 30px;
+        display: flex;
+        gap: 5px;
+    }
+    
+    .tab {
+        padding: 15px 25px;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        color: var(--text-dark);
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s;
+    }
+    
+    .tab:hover {
+        background-color: var(--bg-light);
+    }
+    
+    .tab.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+    
+    /* Conteúdo das Tabs */
+    .tab-content {
+        display: none;
+        padding: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    /* Tab Gerador */
+    .gerador-container {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+    }
+    
+    .produtos-table {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    table {
+        border-collapse: collapse;
+        font-size: 14px;
+        width: 100%;
+    }
+    
+    th, td {
+        border: 1px solid var(--border-color);
+        padding: 12px;
+        text-align: center;
+    }
+    
+    th {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: bold;
+    }
+    
+    .btn-gerar {
+        padding: 8px 16px;
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: bold;
+    }
+    
+    .btn-gerar:hover {
+        background-color: var(--primary-color);
+    }
+    
+    .etiqueta-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    #etiqueta {
+        width: 107mm;
+        height: 48mm;
+        border: 2px solid black;
+        padding: 2mm;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        background: white;
+        position: relative;
+    }
+    
+    #qrcode {
+        width: 130px;
+        height: 130px;
+        flex-shrink: 0;
+    }
+    
+    #dados {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+    }
+    
+    #produtoNome {
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    
+    #codigoGerado {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .etiqueta-footer {
+        position: absolute;
+        bottom: 2mm;
+        left: 2mm;
+        right: 2mm;
+        font-size: 9px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .reimpressao-flag {
+        position: absolute;
+        top: 2mm;
+        right: 2mm;
+        background-color: #ffeb3b;
+        color: #000;
+        padding: 3px 8px;
+        font-size: 10px;
+        font-weight: bold;
+        border-radius: 3px;
+    }
+    
+    .etiqueta-actions {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-action {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    
+    .btn-copiar {
+        background-color: #4caf50;
+        color: white;
+    }
+    
+    .btn-imprimir {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    /* Tab Histórico */
+    .historico-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .historico-table {
+        width: 100%;
+        margin-top: 20px;
+    }
+    
+    .btn-reimprimir {
+        padding: 6px 12px;
+        background-color: #ff9800;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    
+    /* Tab Usuários (Admin) */
+    .usuarios-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .usuarios-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .btn-novo-usuario {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .status-ativo {
+        color: #4caf50;
+        font-weight: bold;
+    }
+    
+    .status-inativo {
+        color: #f44336;
+        font-weight: bold;
+    }
+    
+    .btn-toggle-status {
+        padding: 5px 10px;
+        background-color: #ff9800;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 11px;
+        margin-right: 5px;
+    }
+    
+    .btn-reset-senha {
+        padding: 5px 10px;
+        background-color: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 11px;
+    }
+    
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 30px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .modal-header h2 {
+        color: var(--primary-color);
+    }
+    
+    .close {
+        font-size: 28px;
+        font-weight: bold;
+        color: #aaa;
+        cursor: pointer;
+    }
+    
+    .close:hover {
+        color: #000;
+    }
+    
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+    
+    .btn-cancel {
+        padding: 10px 20px;
+        background-color: #ccc;
+        color: #333;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .btn-save {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    @media print {
+        @page {
+            size: 107mm 48mm;
+            margin: 0;
+        }
+        
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 107mm !important;
+            height: 48mm !important;
+            overflow: hidden !important;
+        }
+        
+        body * {
+            visibility: hidden;
+        }
+        
+        #etiqueta, #etiqueta * {
+            visibility: visible;
+        }
+        
+        #etiqueta {
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            margin: 0 !important;
+            border: 2px solid black;
+            width: 107mm !important;
+            height: 48mm !important;
+            padding: 2mm !important;
+            box-sizing: border-box !important;
+            page-break-after: avoid;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+        
+        #qrcode {
+            width: 130px !important;
+            height: 130px !important;
+            flex-shrink: 0 !important;
+        }
+        
+        #dados {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            flex: 1 !important;
+        }
+        
+        .etiqueta-footer {
+            position: absolute !important;
+            bottom: 2mm !important;
+            left: 2mm !important;
+            right: 2mm !important;
+            font-size: 9px !important;
+            font-weight: bold !important;
+            display: flex !important;
+            justify-content: space-between !important;
+        }
+    }
+</style>
+</head>
+<body>
+
+<!-- Tela de Login -->
+<div id="loginScreen">
+    <div class="logo">
+        <img src="https://www.halexistar.com.br/assets/img/logo.png" alt="Halexistar Logo
+v. 1.0
+">
+    </div>
+    <div class="login-box">
+        <h2>Login do Sistema</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginUser">Usuário:</label>
+                <input type="text" id="loginUser" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Senha:</label>
+                <input type="password" id="loginPassword" required>
+            </div>
+            <div class="error-message" id="loginError">Login e/ou senha inválido(s). Tente Novamente.</div>
+            <button type="submit" class="btn-primary">Entrar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Sistema Principal -->
+<div id="mainSystem">
+    <div class="header">
+        <div class="header-left">
+            <img src="https://www.halexistar.com.br/assets/img/logo.png" alt="Logo" class="logo-small">
+            <h1>Sistema de Etiquetas</h1>
+        </div>
+        <div class="user-info">
+            <span>Usuário: <strong id="currentUserName"></strong></span>
+            <span>Perfil: <strong id="currentUserRole"></strong></span>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab active" onclick="openTab('gerador')">Gerador de Etiquetas</button>
+        <button class="tab" onclick="openTab('historico')">Histórico</button>
+        <button class="tab" id="tabUsuarios" style="display:none;" onclick="openTab('usuarios')">Gestão de Usuários</button>
+    </div>
+    
+    <!-- Tab Gerador -->
+    <div id="gerador" class="tab-content active">
+        <div class="gerador-container">
+            <div class="produtos-table">
+                <h3 style="margin-bottom: 15px; color: var(--primary-color);">Produtos</h3>
+                <table>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Validade Técnica</th>
+                        <th>Ação</th>
+                    </tr>
+                    <tr>
+                        <td>Detergente</td>
+                        <td>24 horas</td>
+                        <td><button class="btn-gerar" onclick="gerarQRCode('D','Detergente','24 horas')">Gerar QR</button></td>
+                    </tr>
+                    <tr>
+                        <td>Hipoclorito de Sódio</td>
+                        <td>24 horas</td>
+                        <td><button class="btn-gerar" onclick="gerarQRCode('H','Hipoclorito de Sódio','24 horas')">Gerar QR</button></td>
+                    </tr>
+                    <tr>
+                        <td>Proxitane</td>
+                        <td>24 horas</td>
+                        <td><button class="btn-gerar" onclick="gerarQRCode('P','Proxitane','24 horas')">Gerar QR</button></td>
+                    </tr>
+                    <tr>
+                        <td>Álcool 70°</td>
+                        <td>7 dias</td>
+                        <td><button class="btn-gerar" onclick="gerarQRCode('A','Álcool 70°','7 dias')">Gerar QR</button></td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="etiqueta-container">
+                <h3 style="margin-bottom: 15px; color: var(--primary-color);">Etiqueta Gerada</h3>
+                <div id="etiqueta">
+                    <div id="qrcode"></div>
+                    <div id="dados">
+                        <div id="produtoNome">Aguardando geração...</div>
+                        <div id="codigoGerado">LT --- | VL ---</div>
+                    </div>
+                    <div class="etiqueta-footer" id="etiquetaFooter" style="display:none;"></div>
+                </div>
+                <div class="etiqueta-actions">
+                    <button class="btn-action btn-copiar" onclick="copiarCodigo()">Copiar</button>
+                    <button class="btn-action btn-imprimir" onclick="imprimirEtiqueta()">Imprimir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tab Histórico -->
+    <div id="historico" class="tab-content">
+        <div class="historico-container">
+            <h3 style="margin-bottom: 15px; color: var(--primary-color);">Histórico de Etiquetas</h3>
+            <table class="historico-table">
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Produto</th>
+                        <th>Lote</th>
+                        <th>Validade</th>
+                        <th>Gerador</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="historicoBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Tab Usuários (Admin) -->
+    <div id="usuarios" class="tab-content">
+        <div class="usuarios-container">
+            <div class="usuarios-header">
+                <h3 style="color: var(--primary-color);">Gestão de Usuários</h3>
+                <button class="btn-novo-usuario" onclick="abrirModalNovoUsuario()">+ Novo Usuário</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Login</th>
+                        <th>Nome Completo</th>
+                        <th>Setor</th>
+                        <th>Função</th>
+                        <th>Matrícula</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="usuariosBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Novo Usuário -->
+<div id="modalNovoUsuario" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Novo Usuário</h2>
+            <span class="close" onclick="fecharModalNovoUsuario()">&times;</span>
+        </div>
+        <form id="formNovoUsuario">
+            <div class="form-group">
+                <label>Login:</label>
+                <input type="text" id="novoLogin" required>
+            </div>
+            <div class="form-group">
+                <label>Nome Completo:</label>
+                <input type="text" id="novoNome" required>
+            </div>
+            <div class="form-group">
+                <label>Setor:</label>
+                <input type="text" id="novoSetor" required>
+            </div>
+            <div class="form-group">
+                <label>Função:</label>
+                <input type="text" id="novoFuncao" required>
+            </div>
+            <div class="form-group">
+                <label>Matrícula:</label>
+                <input type="text" id="novoMatricula" required>
+            </div>
+            <div class="form-group">
+                <label>Senha Padrão:</label>
+                <input type="password" id="novaSenha" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="fecharModalNovoUsuario()">Cancelar</button>
+                <button type="submit" class="btn-save">Cadastrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Reimpressão -->
+<div id="modalReimpressao" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Reimpressão de Etiqueta</h2>
+            <span class="close" onclick="fecharModalReimpressao()">&times;</span>
+        </div>
+        <div id="etiquetaReimpressao">
+            <div id="qrcodeReimpressao"></div>
+            <div id="dadosReimpressao">
+                <div id="produtoNomeReimpressao"></div>
+                <div id="codigoGeradoReimpressao"></div>
+            </div>
+            <div class="etiqueta-footer" id="etiquetaFooterReimpressao"></div>
+        </div>
+        <div class="etiqueta-actions">
+            <button class="btn-action btn-imprimir" onclick="imprimirReimpressao()">Imprimir</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Trocar Senha -->
+<div id="modalTrocarSenha" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Alterar Senha</h2>
+        </div>
+        <p style="margin-bottom: 20px;">Você está usando a senha padrão. Por favor, defina uma nova senha.</p>
+        <form id="formTrocarSenha">
+            <div class="form-group">
+                <label>Nova Senha:</label>
+                <input type="password" id="novaSenhaUsuario" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label>Confirmar Senha:</label>
+                <input type="password" id="confirmarSenhaUsuario" required>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-save">Confirmar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// ==================== SISTEMA DE AUTENTICAÇÃO ====================
+let currentUser = null;
+let usuarios = JSON.parse(localStorage.getItem('usuarios')) || {
+    admin: {
+        login: 'admin',
+        senha: 'admin123',
+        nome: 'Administrador',
+        setor: 'TI',
+        funcao: 'Administrador',
+        matricula: '0000',
+        perfil: 'admin',
+        ativo: true,
+        senhaAlterada: true
+    }
+};
+
+let historico = JSON.parse(localStorage.getItem('historico')) || [];
+
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const user = document.getElementById('loginUser').value.trim().toLowerCase();
+    const pass = document.getElementById('loginPassword').value;
+    const errorMsg = document.getElementById('loginError');
+    
+    errorMsg.classList.remove('show');
+    
+    if (usuarios[user] && usuarios[user].senha === pass) {
+        if (!usuarios[user].ativo) {
+            errorMsg.textContent = 'Usuário inativo. Contate o administrador.';
+            errorMsg.classList.add('show');
+            return;
+        }
+        
+        currentUser = usuarios[user];
+        
+        if (!currentUser.senhaAlterada) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('modalTrocarSenha').style.display = 'block';
+        } else {
+            iniciarSistema();
+        }
+    } else {
+        errorMsg.textContent = 'Login e/ou senha inválido(s). Tente Novamente.';
+        errorMsg.classList.add('show');
+    }
+});
+
+document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+    }
+});
+
+document.getElementById('formTrocarSenha').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const novaSenha = document.getElementById('novaSenhaUsuario').value;
+    const confirmar = document.getElementById('confirmarSenhaUsuario').value;
+    
+    if (novaSenha !== confirmar) {
+        alert('As senhas não coincidem!');
+        return;
+    }
+    
+    if (novaSenha.length < 6) {
+        alert('A senha deve ter pelo menos 6 caracteres!');
+        return;
+    }
+    
+    usuarios[currentUser.login].senha = novaSenha;
+    usuarios[currentUser.login].senhaAlterada = true;
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
+    
+    document.getElementById('modalTrocarSenha').style.display = 'none';
+    iniciarSistema();
+});
+
+function iniciarSistema() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainSystem').style.display = 'block';
+    document.getElementById('currentUserName').textContent = currentUser.nome;
+    document.getElementById('currentUserRole').textContent = currentUser.perfil === 'admin' ? 'Administrador' : 'Usuário';
+    
+    if (currentUser.perfil === 'admin') {
+        document.getElementById('tabUsuarios').style.display = 'block';
+    }
+    
+    carregarHistorico();
+    if (currentUser.perfil === 'admin') {
+        carregarUsuarios();
+    }
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('mainSystem').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginError').classList.remove('show');
+    openTab('gerador');
+}
+
+// ==================== NAVEGAÇÃO ====================
+function openTab(tabName) {
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => tab.classList.remove('active'));
+    contents.forEach(content => content.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById(tabName).classList.add('active');
+    
+    if (tabName === 'historico') {
+        carregarHistorico();
+    } else if (tabName === 'usuarios' && currentUser.perfil === 'admin') {
+        carregarUsuarios();
+    }
+}
+
+// ==================== GERADOR DE QR CODE (Original) ====================
+let sequencia = "A";
+initSequencia();
+
+function hojeISO() {
+    return new Date().toISOString().slice(0,10);
+}
+
+function initSequencia() {
+    const hoje = hojeISO();
+    const storedDate = localStorage.getItem("sequenciaDate");
+    const storedSeq = localStorage.getItem("sequencia");
+    const storedUsed = localStorage.getItem("sequenciaUsed");
+
+    if (!storedDate || storedDate !== hoje) {
+        sequencia = "A";
+        localStorage.setItem("sequencia", sequencia);
+        localStorage.setItem("sequenciaDate", hoje);
+        localStorage.setItem("sequenciaUsed", "false");
+    } else {
+        sequencia = storedSeq || "A";
+        if (storedUsed !== "true" && storedUsed !== "false") {
+            localStorage.setItem("sequenciaUsed", "false");
+        }
+    }
+
+    if (!window._seqTickerSet) {
+        window._seqTickerSet = true;
+        setInterval(verificarResetDia, 60000);
+    }
+}
+
+function verificarResetDia() {
+    const hoje = hojeISO();
+    const storedDate = localStorage.getItem("sequenciaDate");
+    if (!storedDate || storedDate !== hoje) {
+        sequencia = "A";
+        localStorage.setItem("sequencia", sequencia);
+        localStorage.setItem("sequenciaDate", hoje);
+        localStorage.setItem("sequenciaUsed", "false");
+    }
+}
+
+function obterSequenciaParaGerar() {
+    verificarResetDia();
+    const usado = localStorage.getItem("sequenciaUsed");
+    let curr = localStorage.getItem("sequencia") || "A";
+
+    if (usado !== "true") {
+        localStorage.setItem("sequenciaUsed", "true");
+        sequencia = curr;
+        return sequencia;
+    } else {
+        let letra = curr;
+        if (letra.length > 1) letra = letra.charAt(letra.length - 1);
+        if (letra === "Z") {
+            letra = "A";
+        } else {
+            letra = String.fromCharCode(letra.charCodeAt(0) + 1);
+        }
+        sequencia = letra;
+        localStorage.setItem("sequencia", sequencia);
+        return sequencia;
+    }
+}
+
+function adicionarValidade(agora, validadeTecnica) {
+    let dataVal = new Date(agora.getTime());
+    const valNum = parseInt(validadeTecnica, 10) || 0;
+    if (validadeTecnica.toLowerCase().includes("hora")) {
+        dataVal.setHours(dataVal.getHours() + valNum);
+    } else if (validadeTecnica.toLowerCase().includes("dia")) {
+        dataVal.setDate(dataVal.getDate() + valNum);
+    }
+    return dataVal;
+}
+
+function produtoDaSemana() {
+    const inicio = new Date(2025, 8, 28);
+    const hoje = new Date();
+    const diffDias = Math.floor((hoje - inicio) / (1000 * 60 * 60 * 24));
+    const semana = Math.floor(diffDias / 7) % 2;
+    return ["Hipoclorito de Sódio", "Proxitane"][semana];
+}
+
+let ultimaEtiqueta = null;
+
+function gerarQRCode(letraProduto, produto, validadeTecnica) {
+    if (produto === "Hipoclorito de Sódio" || produto === "Proxitane") {
+        if (produto !== produtoDaSemana()) {
+            alert("Não é o saneante da semana!");
+            return;
+        }
+    }
+
+    const agora = new Date();
+    const validadeData = adicionarValidade(agora, validadeTecnica);
+
+    const dia = String(validadeData.getDate()).padStart(2, "0");
+    const mes = String(validadeData.getMonth() + 1).padStart(2, "0");
+    const ano = validadeData.getFullYear();
+    const horas = String(validadeData.getHours()).padStart(2, "0");
+    const minutos = String(validadeData.getMinutes()).padStart(2, "0");
+
+    const seq = obterSequenciaParaGerar();
+
+    const lote =
+        letraProduto +
+        String(agora.getDate()).padStart(2, "0") +
+        String(agora.getMonth() + 1).padStart(2, "0") +
+        String(agora.getFullYear()).slice(-2) +
+        seq;
+
+    const validade = `${dia}-${mes}-${ano} ${horas}h${minutos}`;
+    const codigo = `LT ${lote}  VL ${validade}`;
+    
+    const dataHoraGeracao = `${String(agora.getDate()).padStart(2, "0")}/${String(agora.getMonth() + 1).padStart(2, "0")}/${agora.getFullYear()} ${String(agora.getHours()).padStart(2, "0")}:${String(agora.getMinutes()).padStart(2, "0")}`;
+
+    document.getElementById("produtoNome").innerText = produto;
+    document.getElementById("codigoGerado").innerText = codigo;
+
+    document.getElementById("qrcode").innerHTML = "";
+    new QRCode(document.getElementById("qrcode"), {
+        text: codigo,
+        width: 130,
+        height: 130
+    });
+    
+    const footer = document.getElementById('etiquetaFooter');
+    footer.innerHTML = `<span>Gerador: ${currentUser.login} | ${dataHoraGeracao}</span>`;
+    footer.style.display = 'flex';
+    
+    ultimaEtiqueta = {
+        id: Date.now(),
+        dataHora: dataHoraGeracao,
+        produto: produto,
+        lote: lote,
+        validade: validade,
+        codigo: codigo,
+        gerador: currentUser.login,
+        geradorNome: currentUser.nome,
+        reimpressoes: []
+    };
+    
+    historico.unshift(ultimaEtiqueta);
+    localStorage.setItem('historico', JSON.stringify(historico));
+}
+
+function copiarCodigo() {
+    const codigo = document.getElementById("codigoGerado").innerText;
+    if (!codigo || codigo.includes("---")) {
+        alert("Nenhum código gerado.");
+        return;
+    }
+    navigator.clipboard.writeText(codigo).then(() => {
+        alert("Código copiado!");
+    }, () => {
+        alert("Falha ao copiar.");
+    });
+}
+
+function imprimirEtiqueta() {
+    const codigo = document.getElementById("codigoGerado").innerText;
+    if (!codigo || codigo.includes("---")) {
+        alert("Nenhum código gerado.");
+        return;
+    }
+    window.print();
+}
+
+// ==================== HISTÓRICO ====================
+function carregarHistorico() {
+    const tbody = document.getElementById('historicoBody');
+    tbody.innerHTML = '';
+    
+    historico.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.dataHora}</td>
+            <td>${item.produto}</td>
+            <td>${item.lote}</td>
+            <td>${item.validade}</td>
+            <td>${item.geradorNome}</td>
+            <td><button class="btn-reimprimir" onclick="reimprimir(${item.id})">Reimprimir</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function reimprimir(id) {
+    const etiqueta = historico.find(e => e.id === id);
+    if (!etiqueta) return;
+    
+    const agora = new Date();
+    const dataHoraReimpressao = `${String(agora.getDate()).padStart(2, "0")}/${String(agora.getMonth() + 1).padStart(2, "0")}/${agora.getFullYear()} ${String(agora.getHours()).padStart(2, "0")}:${String(agora.getMinutes()).padStart(2, "0")}`;
+    
+    etiqueta.reimpressoes.push({
+        usuario: currentUser.login,
+        usuarioNome: currentUser.nome,
+        dataHora: dataHoraReimpressao
+    });
+    localStorage.setItem('historico', JSON.stringify(historico));
+    
+    const modal = document.getElementById('modalReimpressao');
+    const etiquetaDiv = document.getElementById('etiquetaReimpressao');
+    
+    etiquetaDiv.innerHTML = `
+        <div class="reimpressao-flag">REIMPRESSÃO</div>
+        <div id="qrcodeReimpressao" style="width: 130px; height: 130px;"></div>
+        <div id="dadosReimpressao" style="display: flex; flex-direction: column; justify-content: center; flex: 1;">
+            <div style="font-weight: bold; font-size: 16px; margin-bottom: 10px;">${etiqueta.produto}</div>
+            <div style="font-size: 14px; margin-bottom: 10px;">${etiqueta.codigo}</div>
+        </div>
+        <div style="position: absolute; bottom: 2mm; left: 2mm; right: 2mm; font-size: 9px; font-weight: bold; display: flex; justify-content: space-between;">
+            <span>Gerador: ${etiqueta.gerador} | ${etiqueta.dataHora}</span>
+            <span>Reimp: ${currentUser.login} | ${dataHoraReimpressao}</span>
+        </div>
+    `;
+    
+    etiquetaDiv.style.width = '107mm';
+    etiquetaDiv.style.height = '48mm';
+    etiquetaDiv.style.border = '2px solid black';
+    etiquetaDiv.style.padding = '2mm';
+    etiquetaDiv.style.display = 'flex';
+    etiquetaDiv.style.alignItems = 'center';
+    etiquetaDiv.style.gap = '10px';
+    etiquetaDiv.style.position = 'relative';
+    etiquetaDiv.style.background = 'white';
+    
+    new QRCode(document.getElementById("qrcodeReimpressao"), {
+        text: etiqueta.codigo,
+        width: 130,
+        height: 130
+    });
+    
+    modal.style.display = 'block';
+}
+
+function fecharModalReimpressao() {
+    document.getElementById('modalReimpressao').style.display = 'none';
+}
+
+function imprimirReimpressao() {
+    const modal = document.getElementById('modalReimpressao');
+    const originalDisplay = modal.style.display;
+    
+    modal.style.display = 'block';
+    
+    const printStyle = document.createElement('style');
+    printStyle.id = 'print-style-temp';
+    printStyle.textContent = `
+        @media print {
+            @page {
+                size: 107mm 48mm;
+                margin: 0;
+            }
+            
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 107mm !important;
+                height: 48mm !important;
+                overflow: hidden !important;
+            }
+            
+            body * {
+                visibility: hidden;
+            }
+            
+            #etiquetaReimpressao,
+            #etiquetaReimpressao * {
+                visibility: visible;
+            }
+            
+            #etiquetaReimpressao {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                margin: 0 !important;
+                width: 107mm !important;
+                height: 48mm !important;
+                border: 2px solid black !important;
+                padding: 2mm !important;
+                box-sizing: border-box !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 10px !important;
+                background: white !important;
+            }
+            
+            #qrcodeReimpressao {
+                width: 130px !important;
+                height: 130px !important;
+                flex-shrink: 0 !important;
+            }
+            
+            #dadosReimpressao {
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                flex: 1 !important;
+            }
+            
+            .reimpressao-flag {
+                position: absolute !important;
+                top: 2mm !important;
+                right: 2mm !important;
+                background-color: #ffeb3b !important;
+                color: #000 !important;
+                padding: 3px 8px !important;
+                font-size: 10px !important;
+                font-weight: bold !important;
+                border-radius: 3px !important;
+            }
+            
+            #etiquetaReimpressao > div:last-child {
+                position: absolute !important;
+                bottom: 2mm !important;
+                left: 2mm !important;
+                right: 2mm !important;
+                font-size: 9px !important;
+                font-weight: bold !important;
+                display: flex !important;
+                justify-content: space-between !important;
+            }
+        }
+    `;
+    document.head.appendChild(printStyle);
+    
+    window.print();
+    
+    setTimeout(() => {
+        const style = document.getElementById('print-style-temp');
+        if (style) style.remove();
+    }, 100);
+}
+
+// ==================== GESTÃO DE USUÁRIOS ====================
+function abrirModalNovoUsuario() {
+    document.getElementById('modalNovoUsuario').style.display = 'block';
+}
+
+function fecharModalNovoUsuario() {
+    document.getElementById('modalNovoUsuario').style.display = 'none';
+    document.getElementById('formNovoUsuario').reset();
+}
+
+document.getElementById('formNovoUsuario').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const login = document.getElementById('novoLogin').value.trim().toLowerCase();
+    const nome = document.getElementById('novoNome').value.trim();
+    const setor = document.getElementById('novoSetor').value.trim();
+    const funcao = document.getElementById('novoFuncao').value.trim();
+    const matricula = document.getElementById('novoMatricula').value.trim();
+    const senha = document.getElementById('novaSenha').value;
+    
+    if (usuarios[login]) {
+        alert('Este login já existe!');
+        return;
+    }
+    
+    usuarios[login] = {
+        login: login,
+        senha: senha,
+        nome: nome,
+        setor: setor,
+        funcao: funcao,
+        matricula: matricula,
+        perfil: 'usuario',
+        ativo: true,
+        senhaAlterada: false
+    };
+    
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
+    alert('Usuário cadastrado com sucesso!');
+    fecharModalNovoUsuario();
+    carregarUsuarios();
+});
+
+function carregarUsuarios() {
+    const tbody = document.getElementById('usuariosBody');
+    tbody.innerHTML = '';
+    
+    Object.values(usuarios).forEach(user => {
+        if (user.perfil === 'admin') return;
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${user.login}</td>
+            <td>${user.nome}</td>
+            <td>${user.setor}</td>
+            <td>${user.funcao}</td>
+            <td>${user.matricula}</td>
+            <td class="${user.ativo ? 'status-ativo' : 'status-inativo'}">${user.ativo ? 'Ativo' : 'Inativo'}</td>
+            <td>
+                <button class="btn-toggle-status" onclick="toggleStatus('${user.login}')">${user.ativo ? 'Inativar' : 'Ativar'}</button>
+                <button class="btn-reset-senha" onclick="resetarSenha('${user.login}')">Resetar Senha</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function toggleStatus(login) {
+    usuarios[login].ativo = !usuarios[login].ativo;
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
+    carregarUsuarios();
+    alert(`Usuário ${usuarios[login].ativo ? 'ativado' : 'inativado'} com sucesso!`);
+}
+
+function resetarSenha(login) {
+    const novaSenha = prompt('Digite a nova senha padrão para o usuário:');
+    if (novaSenha && novaSenha.length >= 6) {
+        usuarios[login].senha = novaSenha;
+        usuarios[login].senhaAlterada = false;
+        localStorage.setItem('usuarios', JSON.stringify(usuarios));
+        alert('Senha resetada! O usuário deverá alterar a senha no próximo login.');
+    } else {
+        alert('Senha inválida! Deve ter pelo menos 6 caracteres.');
+    }
+}
+</script>
+
+</body>
+</html>
